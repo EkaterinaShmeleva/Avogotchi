@@ -1,0 +1,27 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background-color: #fefae0;
+}
+
+canvas {
+  background-color: #fff;
+  display: block;
+  margin: 20px auto;
+  border: 2px solid #ccc;
+}
+
+#controls, #restartBtn {
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 16px;
+}
+
+#status {
+  margin-top: 10px;
+  font-size: 18px;
+}

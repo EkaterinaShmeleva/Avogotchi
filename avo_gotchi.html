@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avo-gotchi</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #fefae0;
+    }
+    canvas {
+      background-color: #fff;
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #ccc;
+    }
+    #controls, #restartBtn {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🥑 Avo-gotchi</h1>
+  <canvas id="avocadoCanvas" width="300" height="400"></canvas>
+
+  <div id="status">
+    <p>Hunger: <span id="hunger">30</span></p>
+    <p>Laune: <span id="mood">80</span></p>
+    <p>Energie: <span id="energy">80</span></p>
+    <p>Lebenszeit: <span id="lifetime">60</span> Sekunden</p>
+  </div>
+
+  <div id="controls" style="display: none">
+    <button id="feedBtn">Füttern 🥑</button>
+    <button id="playBtn">Spielen 🎮</button>
+    <button id="sleepBtn">Schlafen 😴</button>
+  </div>
+
+  <button id="startBtn">Start</button><br>
+  <button id="restartBtn" style="display: none">Neustart 🔁</button>
+  <button id="saveBtn">Spielstand speichern 💾</button>
+
+  <input type="file" id="loadFile" accept=".json">
+  <button id="loadBtn">Spielstand laden 📂</button>
+
+  
+  <script>
+    const canvas = document.getElementById("avocadoCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const startImage = new Image();
+    startImage.src = "img/happy.png";
+
+    const gameOverImage = new Image();
+    gameOverImage.src = "img/gameover.jpg";
+
+    let showStartImage = true;
+    let showGameOverImage = false;
+
+    let hunger = 20;
+    let mood = 80;
+    let energy = 80;
+    let lifetime = 60;
+    let gameInterval = null;
+    let timerInterval = null;
+    let isGameRunning = false;
+
+    function drawEyes() {
+      ctx.fillStyle = "#000";
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      if (!isGameRunning) {
+        ctx.arc(135, 180, 5, 0, Math.PI * 2);
+        ctx.arc(165, 180, 5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (energy < 30) {
+        ctx.moveTo(130, 180);
+        ctx.lineTo(140, 180);
+        ctx.moveTo(160, 180);
+        ctx.lineTo(170, 180);
+        ctx.stroke();
+      } else if (mood < 30) {
+        ctx.arc(135, 182, 5, 0, Math.PI, true);
+        ctx.arc(165, 182, 5, 0, Math.PI, true);
+        ctx.fill();
+      } else {
+        ctx.arc(135, 180, 5, 0, Math.PI * 2);
+        ctx.arc(165, 180, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawMouth() {
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#000";
+
+      if (!isGameRunning) {
+        ctx.arc(150, 190, 10, 0, Math.PI, false);
+      } else if (lifetime <= 0) {
+        ctx.arc(150, 200, 10, 0, Math.PI);
+      } else if (hunger > 80 || mood < 30 || energy < 30) {
+        ctx.arc(150, 200, 10, 0, Math.PI);
+      } else if (hunger > 60 || mood < 50 || energy < 50) {
+        ctx.moveTo(140, 200);
+        ctx.lineTo(160, 200);
+      } else {
+        ctx.arc(150, 190, 10, 0, Math.PI, false);
+      }
+      ctx.stroke();
+    }
+
+    function drawAvocado() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (showStartImage) {
+        ctx.drawImage(startImage, 0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      if (showGameOverImage) {
+        ctx.drawImage(gameOverImage, 0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      ctx.beginPath();
+      ctx.ellipse(150, 200, 60, 90, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "#a8d08d";
+      ctx.fill();
+      ctx.strokeStyle = "#4e944f";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(150, 230, 25, 0, Math.PI * 2);
+      ctx.fillStyle = "#a0522d";
+      ctx.fill();
+
+      drawEyes();
+      drawMouth();
+
+      ctx.beginPath();
+      ctx.arc(125, 185, 5, 0, Math.PI * 2);
+      ctx.arc(175, 185, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffb6b6";
+      ctx.fill();
+    }
+
+    function updateDisplay() {
+      document.getElementById("hunger").textContent = hunger;
+      document.getElementById("mood").textContent = mood;
+      document.getElementById("energy").textContent = energy;
+      document.getElementById("lifetime").textContent = lifetime;
+    }
+
+    function decay() {
+      hunger = Math.min(100, hunger + 1);
+      mood = Math.max(0, mood - 1);
+      energy = Math.max(0, energy - 1);
+      drawAvocado();
+      updateDisplay();
+    }
+
+    function startGame() {
+      isGameRunning = true;
+      showStartImage = false;
+      showGameOverImage = false;
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("controls").style.display = "block";
+      document.getElementById("restartBtn").style.display = "none";
+      hunger = 20;
+      mood = 80;
+      energy = 80;
+      lifetime = 60;
+      drawAvocado();
+      updateDisplay();
+
+      gameInterval = setInterval(decay, 1000);
+      timerInterval = setInterval(() => {
+        lifetime--;
+        updateDisplay();
+        if (lifetime <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      isGameRunning = false;
+      showGameOverImage = true;
+      clearInterval(gameInterval);
+      clearInterval(timerInterval);
+      document.getElementById("controls").style.display = "none";
+      document.getElementById("restartBtn").style.display = "inline-block";
+      drawAvocado();
+      alert("Game over!🥑");
+    }
+
+    function restartGame() {
+      startGame();
+    }
+
+    document.getElementById("startBtn").addEventListener("click", startGame);
+    document.getElementById("restartBtn").addEventListener("click", restartGame);
+
+    document.getElementById("feedBtn").addEventListener("click", () => {
+      hunger = Math.max(0, hunger - 20);
+      mood = Math.min(100, mood + 5);
+      drawAvocado();
+      updateDisplay();
+    });
+
+    document.getElementById("playBtn").addEventListener("click", () => {
+      mood = Math.min(100, mood + 15);
+      energy = Math.max(0, energy - 10);
+      hunger = Math.min(100, hunger + 10);
+      drawAvocado();
+      updateDisplay();
+    });
+
+    document.getElementById("sleepBtn").addEventListener("click", () => {
+      energy = Math.min(100, energy + 20);
+      mood = Math.max(0, mood - 5);
+      drawAvocado();
+      updateDisplay();
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      startImage.onload = () => {
+        drawAvocado();
+        updateDisplay();
+      };
+    });
+
+        document.getElementById("saveBtn").addEventListener("click", () => {
+      const spielstand = {
+        hunger,
+        mood,
+        energy,
+        lifetime
+      };
+
+      const spielstandJSON = JSON.stringify(spielstand, null, 2);
+      const datei = new Blob([spielstandJSON], { type: "application/json" });
+      const url = URL.createObjectURL(datei);
+
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = "avogotchi_spielstand.json";
+      downloadLink.click();
+
+      URL.revokeObjectURL(url);
+    });
+
+      document.getElementById("loadBtn").addEventListener("click", () => {
+  const fileInput = document.getElementById("loadFile");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Bitte wähle eine Datei aus.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const spielstand = JSON.parse(e.target.result);
+
+      // Werte aus dem gespeicherten Spielstand übernehmen
+      hunger = spielstand.hunger ?? hunger;
+      mood = spielstand.mood ?? mood;
+      energy = spielstand.energy ?? energy;
+      lifetime = spielstand.lifetime ?? lifetime;
+
+      drawAvocado();
+      updateDisplay();
+
+      alert("Spielstand erfolgreich geladen!");
+    } catch (err) {
+      alert("Fehler beim Laden des Spielstands: " + err.message);
+    }
+  };
+
+  reader.readAsText(file);
+});
+
+
+  </script>
+</body>
+</html>

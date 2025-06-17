@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avo-gotchi</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <h1>🥑 Avo-gotchi</h1>
+  <canvas id="avocadoCanvas" width="300" height="400"></canvas>
+
+  <div id="status">
+    <p>Hunger: <span id="hunger">30</span></p>
+    <p>Laune: <span id="mood">80</span></p>
+    <p>Energie: <span id="energy">80</span></p>
+    <p>Lebenszeit: <span id="lifetime">15</span> Sekunden</p>
+  </div>
+
+  <div id="controls" style="display: none">
+    <button id="feedBtn">Füttern 🥑</button>
+    <button id="playBtn">Spielen 🎮</button>
+    <button id="sleepBtn">Schlafen 😴</button>
+  </div>
+
+  <button id="startBtn">Start</button><br>
+  <button id="restartBtn" style="display: none">Neustart 🔁</button>
+  <button id="saveBtn">Spielstand speichern 💾</button>
+
+  <input type="file" id="loadFile" accept=".json">
+  <button id="loadBtn">Spielstand laden 📂</button>
+
+  <script src="js/main.js"></script>
+
+  
+</body>
+</html>
